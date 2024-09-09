@@ -24,7 +24,7 @@ class _MyAppState extends State<MyApp> {
     // Ensure the widget is still mounted before using the context
     if (!mounted) return;
 
-    if (selectedFileWarpedBytes != null) {
+    if (selectedFileWarpedBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('خطایی در انتخاب فایل به‌وجود آمده است.'),
@@ -34,11 +34,29 @@ class _MyAppState extends State<MyApp> {
     }
 
     setState(() {
-      _imageFile = File(selectedFileWarpedBytes!.path);
+      _imageFile = File(selectedFileWarpedBytes.path);
     });
   }
 
-  void takePictureByCamera() {}
+  void takePictureByCamera() async{
+
+    final XFile? captueredImageFromCamera = await picker.pickImage(source: ImageSource.camera);
+
+    if (!mounted) return;
+
+    if (captueredImageFromCamera == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('خطایی در انتخاب فایل به‌وجود آمده است.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _imageFile = File(captueredImageFromCamera.path);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +79,7 @@ class _MyAppState extends State<MyApp> {
                 width: double.infinity,
               ),
               _imageFile != null
-                  ? SizedBox(height: 400, width: 200, child: Image.file(_imageFile!))
+                  ? Image.file(_imageFile!)
                   : const Icon(
                       Icons.add_a_photo_outlined,
                       size: 200,
@@ -70,10 +88,13 @@ class _MyAppState extends State<MyApp> {
                 onPressed: () {
                   selectImageFromGallery();
                 },
-                onLongPress: () {
+                child: const Text("انتخاب فایل "),
+              ),
+              ElevatedButton(
+                onPressed: () {
                   takePictureByCamera();
                 },
-                child: const Text("انتخاب فایل "),
+                child: const Text("گرفتن عکس با دوربین"),
               )
             ],
           )),
