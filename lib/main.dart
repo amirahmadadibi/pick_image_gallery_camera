@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 void main() {
   runApp(MyApp());
@@ -13,8 +14,29 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   File? _imageFile;
+  final ImagePicker picker = ImagePicker();
 
-  void selectImageFromGallery() {}
+  Future<void> selectImageFromGallery() async {
+    final XFile? selectedFileWarpedBytes = await picker.pickImage(source: ImageSource.gallery);
+
+
+    //may no longer be valid when the selectImageFromGallery() method completes (due to navigation changes or widget disposal).
+    // Ensure the widget is still mounted before using the context
+    if (!mounted) return;
+
+    if (selectedFileWarpedBytes != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('خطایی در انتخاب فایل به‌وجود آمده است.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _imageFile = File(selectedFileWarpedBytes!.path);
+    });
+  }
 
   void takePictureByCamera() {}
 
@@ -39,11 +61,11 @@ class _MyAppState extends State<MyApp> {
                 width: double.infinity,
               ),
               _imageFile != null
-                  ? Image.file(_imageFile!)
+                  ? SizedBox(height: 400, width: 200, child: Image.file(_imageFile!))
                   : const Icon(
-                Icons.add_a_photo_outlined,
-                size: 200,
-              ),
+                      Icons.add_a_photo_outlined,
+                      size: 200,
+                    ),
               ElevatedButton(
                 onPressed: () {
                   selectImageFromGallery();
